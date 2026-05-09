@@ -1,0 +1,14 @@
+out/
+out_old/
+build/
+*.o
+*.a
+*.so
+*.pickle
+*.AppImage
+.ninja_deps
+brave
+node_modules/
+brave-browser/src/out_old/
+code/chromium/
+code/ml_data/
