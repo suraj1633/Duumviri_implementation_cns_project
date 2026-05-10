@@ -204,6 +204,16 @@ The original feature set relies heavily on **visual and structural comparisons**
 
 URL entropy captures a **complementary property**: the URL of such a beacon will contain session identifiers and user hashes that make it structurally distinct from any CDN resource URL. The combination of both signal types makes the model more robust.
 
+---
 
+# Note
+
+After pulling the docker container, you need to follow these steps to run changed code:
+
+1. Copy changed_eval.py and changed_pagedelta.py.
+2. Paste these files in corresponding files present in your docker container.
+3. Then run the command "".
+
+---
 
 ## ThankYou
