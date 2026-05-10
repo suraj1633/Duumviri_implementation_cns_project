@@ -40,6 +40,57 @@ from lightgbm import LGBMClassifier
 from catboost import CatBoostClassifier
 import glob
 
+def train(data_dir):
+    from sklearn.model_selection import train_test_split
+    import datetime
+
+    all_data = load_data(data_dir)
+    print("Loaded %d rows" % len(all_data))
+
+    label = all_data['debug_is_ad'] | all_data['debug_is_tracker']
+    features = drop_debug_features(all_data)
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        features, label, test_size=0.2, random_state=42)
+
+    t_oracle = xgb.XGBClassifier(
+        n_estimators=300,
+        max_depth=6,
+        learning_rate=0.05,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        use_label_encoder=False,
+        eval_metric='logloss',
+        random_state=42
+    )
+    t_oracle.fit(X_train, y_train)
+
+    f_oracle = xgb.XGBClassifier(
+        n_estimators=300,
+        max_depth=6,
+        learning_rate=0.05,
+        subsample=0.8,
+        colsample_bytree=0.8,
+        use_label_encoder=False,
+        eval_metric='logloss',
+        random_state=42
+    )
+    f_oracle.fit(X_train, ~y_train)
+
+    by_us = (t_oracle.predict_proba(X_test)[:, 1] >= 0.5) & \
+            (f_oracle.predict_proba(X_test)[:, 1] < 0.5)
+
+    accu = sklearn.metrics.accuracy_score(y_test, by_us)
+    print("=================================")
+    print("New accuracy: %.4f" % accu)
+    print(metrics.classification_report(y_test, by_us))
+    print("=================================")
+
+    today = datetime.date.today().strftime('%Y%m%d')
+    os.makedirs('ml_data/model', exist_ok=True)
+    dump(t_oracle, 'ml_data/model/xgboost_tracker_oracle-%s' % today)
+    dump(f_oracle, 'ml_data/model/xgboost_functionality_oracle-%s' % today)
+    print("Models saved to ml_data/model/")
 
 def drop_debug_features(df):
 	debug_features = {'debug_to_block', 'debug_is_ad', 'response_debug_tracking_apis', 'debug_blocked_retry', 'debug_blocked_url', 'response_all_api_counts', 'debug_vanilla_retry', 'debug_name', 'debug_is_tracker', 'debug_url', '_all_api_counts', '_debug_tracking_apis', 'by_t_oracle_prob', 'by_f_oracle_prob'}
@@ -217,3 +268,5 @@ if __name__ == '__main__':
 		replicate()
 	elif sys.argv[1] == 'eval':
 		eval(sys.argv[2])
+	elif sys.argv[1] == 'train':
+        train(sys.argv[2])
