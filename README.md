@@ -212,7 +212,7 @@ After pulling the docker container, you need to follow these steps to run change
 
 1. Copy changed_eval.py and changed_pagedelta.py.
 2. Paste these files in corresponding files present in your docker container.
-3. Then run the command "".
+3. Then run the command used for script one.
 
 ---
 
