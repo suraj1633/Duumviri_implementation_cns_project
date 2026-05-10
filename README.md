@@ -214,6 +214,8 @@ After pulling the docker container, you need to follow these steps to run change
 2. Paste these files in corresponding files present in your docker container.
 3. Then run the command used for script one.
 
+Separate files were created since the Docker container was resetting/reverting changes made inside it.
+
 ---
 
 ## ThankYou
