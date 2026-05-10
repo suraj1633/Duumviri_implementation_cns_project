@@ -1473,6 +1473,33 @@ class ExtendedPageDelta():
             self.page_delta.vanilla.requests, self.page_delta.blocked.requests)
         self.blocked_reqs = blocked_requests
 
+        def _entropy(s):
+            if not s: return 0.0
+            freq = {}
+            for ch in s:
+                freq[ch] = freq.get(ch, 0) + 1
+            length = len(s)
+            return round(-sum((c/length) * math.log2(c/length) for c in freq.values()), 4)
+
+        urls = [req.url for req in blocked_requests]
+        parsed_urls = [urlparse(u) for u in urls]
+
+        self.features.avg_url_entropy = round(
+            sum(_entropy(u) for u in urls) / max(len(urls), 1), 4)
+
+        self.features.max_url_entropy = max(
+            (_entropy(u) for u in urls), default=0)
+
+        self.features.avg_param_count = round(
+            sum(len(parse_qs(p.query)) for p in parsed_urls) / max(len(parsed_urls), 1), 4)
+
+        high_entropy = sum(1 for u in urls if _entropy(u) > 3.5)
+        self.features.high_entropy_url_ratio = round(
+            high_entropy / max(len(urls), 1), 4)
+
+        self.features.avg_url_depth = round(
+            sum(len(p.path.split('/')) for p in parsed_urls) / max(len(parsed_urls), 1), 4)
+		
         if debugging:
             code.interact('build_network_features',
                           local=dict(locals(), **globals()))
